@@ -1,7 +1,6 @@
 import sublime
 import sublime_plugin
-import os
-
+import os, re
 
 class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
     current_files = None
@@ -40,8 +39,9 @@ class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
         paths = os.listdir(base_dir)
 
         full = lambda p: "%s/%s" % (base_dir, p)
+        disp = lambda f, p: "%s/" % p if os.path.isdir(f) else p
 
-        files = [[path, full(path)] for path in paths]
+        files = [[disp(full(path), path), full(path)] for path in paths if not self.excluded(full(path))]
         files.insert(0, ["..", os.path.dirname(base_dir)])
         return files
 
@@ -57,3 +57,17 @@ class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
                 return relpath
 
         return fullpath
+
+    def excluded(self, fullpath):
+        settings = self.window.active_view().settings()
+        if os.path.isdir(fullpath):
+            patterns = settings.get("folder_exclude_patterns", [])
+        else:
+            patterns = settings.get("file_exclude_patterns", [])
+
+        wc2re = lambda wc: wc.replace(".", "\.").replace("*", "(.*)")
+        for pattern in patterns:
+            if re.search(wc2re(pattern), os.path.basename(fullpath)) is not None:
+                return True
+
+        return False
