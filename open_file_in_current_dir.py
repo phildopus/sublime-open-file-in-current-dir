@@ -7,15 +7,17 @@ class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
     current_files = None
 
     def run(self):
-        if self.window.active_view():
-            current = self.window.active_view().file_name()
+        current = self.window.active_view().file_name()
 
-            if current:
-                self.select_file(current)
+        if current:
+            self.select_file(current)
 
-            else:
-                message = "You must save the file before it has a directory"
-                sublime.status_message(message)
+        else:
+            message = "You must save the file before it has a directory"
+            sublime.status_message(message)
+
+    def is_enabled(self):
+        return self.window.active_view() is not None
 
     def select_file(self, target):
         self.current_files = self.files(target)
@@ -44,14 +46,14 @@ class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
         return files
 
     def path(self, fullpath):
-      folders = self.window.folders()
-      for folder in folders:
-        if os.path.commonprefix([folder, fullpath]) == folder:
-          relpath = os.path.relpath(fullpath, folder)
-          
-          if len(folders) > 1:
-            return os.path.join(os.path.basename(folder), relpath)
+        folders = self.window.folders()
+        for folder in folders:
+            if os.path.commonprefix([folder, fullpath]) == folder:
+                relpath = os.path.relpath(fullpath, folder)
+            
+                if len(folders) > 1:
+                    return os.path.join(os.path.basename(folder), relpath)
 
-          return relpath
+                return relpath
 
-      return fullpath
+        return fullpath
