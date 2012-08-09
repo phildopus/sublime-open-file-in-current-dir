@@ -7,14 +7,15 @@ class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
     current_files = None
 
     def run(self):
-        current = self.window.active_view().file_name()
+        if self.window.active_view():
+            current = self.window.active_view().file_name()
 
-        if current:
-            self.select_file(current)
+            if current:
+                self.select_file(current)
 
-        else:
-            message = "You must save the file before it has a directory"
-            sublime.status_message(message)
+            else:
+                message = "You must save the file before it has a directory"
+                sublime.status_message(message)
 
     def select_file(self, target):
         self.current_files = self.files(target)
