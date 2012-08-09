@@ -18,7 +18,8 @@ class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
 
     def select_file(self, target):
         self.current_files = self.files(target)
-        self.window.show_quick_panel(self.current_files, self.switch_to)
+        display_files = [[path, self.path(fullpath)] for path, fullpath in self.current_files]
+        self.window.show_quick_panel(display_files, self.switch_to)
 
     def switch_to(self, index):
         if index < 0:
@@ -40,3 +41,16 @@ class OpenFileInCurrentDirectoryCommand(sublime_plugin.WindowCommand):
         files = [[path, full(path)] for path in paths]
         files.insert(0, ["..", os.path.dirname(base_dir)])
         return files
+
+    def path(self, fullpath):
+      folders = self.window.folders()
+      for folder in folders:
+        if os.path.commonprefix([folder, fullpath]) == folder:
+          relpath = os.path.relpath(fullpath, folder)
+          
+          if len(folders) > 1:
+            return os.path.join(os.path.basename(folder), relpath)
+
+          return relpath
+
+      return fullpath
